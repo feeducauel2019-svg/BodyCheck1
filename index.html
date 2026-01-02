@@ -524,6 +524,7 @@ body {
       
       <button class="btn" id="btn-pdf">📄 Gerar Relatório PDF</button>
       <button class="btn btn-secondary" id="btn-view-browser" style="display:none;">🌐 Abrir PDF no Navegador</button>
+      <button class="btn btn-secondary" id="btn-download-direct" style="display:none;">📥 Download Direto do PDF</button>
       <button class="btn btn-secondary" id="btn-new">🔄 Nova Avaliação</button>
     </div>
   </div>
@@ -555,6 +556,8 @@ body {
   let results = {};
   let currentFolds = {};
   let lastPdfUrl = null;
+  let lastPdfBlob = null;
+  let lastPdfName = '';
   
   function goToScreen(screenId) {
     const screens = document.querySelectorAll('.screen');
@@ -874,6 +877,58 @@ body {
     return (isAndroid || isIOS) && isWebView;
   }
   
+  function openPdfInBrowser(pdfBase64, filename) {
+    // Método 1: Tentar usar intent do Android (mais compatível com AppGeyser)
+    const isAndroid = navigator.userAgent.toLowerCase().indexOf('android') > -1;
+    
+    if (isAndroid) {
+      // Criar URL com intent para abrir no Google Drive ou navegador
+      const intentUrl = 'intent://view/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=data:application/pdf;base64,' + pdfBase64 + ';end';
+      
+      try {
+        window.location.href = intentUrl;
+        return intentUrl;
+      } catch (e) {
+        console.log('Intent falhou, tentando método alternativo');
+      }
+    }
+    
+    // Método 2: Criar HTML com embed do PDF
+    const pdfHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + filename + '</title><style>*{margin:0;padding:0;box-sizing:border-box}body,html{height:100%;overflow:hidden;font-family:sans-serif}iframe{border:0;width:100%;height:100%}.fallback{padding:20px;text-align:center}.btn{display:inline-block;padding:15px 30px;background:#667eea;color:#fff;text-decoration:none;border-radius:8px;margin:10px;font-weight:600}</style></head><body><iframe src="data:application/pdf;base64,' + pdfBase64 + '#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf"></iframe><div class="fallback"><p>PDF gerado com sucesso!</p><a href="data:application/pdf;base64,' + pdfBase64 + '" download="' + filename + '" class="btn">📥 Baixar PDF</a></div></body></html>';
+    
+    const blob = new Blob([pdfHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    // Tentar múltiplos métodos de abertura
+    try {
+      // Método A: window.open com configurações específicas
+      const opened = window.open(url, '_blank', 'location=yes,toolbar=yes');
+      
+      if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+        throw new Error('Window blocked');
+      }
+    } catch (e) {
+      // Método B: Link temporário
+      const a = document.createElement('a');
+      a.href = url;
+      a.target = '_system'; // Para Cordova/PhoneGap
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() {
+        document.body.removeChild(a);
+      }, 100);
+    }
+    
+    // Armazenar para botão alternativo
+    if (lastPdfUrl) {
+      URL.revokeObjectURL(lastPdfUrl);
+    }
+    lastPdfUrl = url;
+    
+    return url;
+  }
+  
   function generatePDF() {
     const loadingEl = document.getElementById('loading');
     loadingEl.classList.add('show');
@@ -1118,46 +1173,30 @@ body {
         doc.text('BodyCheck - Avaliação da Composição Corporal', 105, yPos + 5, { align: 'center' });
         
         const filename = 'BodyCheck_' + name.replace(/\s/g, '_') + '_' + Date.now() + '.pdf';
+        lastPdfName = filename;
         
-        // Gerar PDF como blob para abrir no navegador
-        const pdfBlob = doc.output('blob');
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        
-        // Armazenar URL para uso posterior
-        if (lastPdfUrl) {
-          URL.revokeObjectURL(lastPdfUrl);
-        }
-        lastPdfUrl = pdfUrl;
-        
-        // Detectar se está em WebView e abrir no navegador externo
+        // Detectar ambiente e usar método apropriado
         if (isWebView()) {
-          // Mostrar botão alternativo
+          // Para WebView/AppGeyser: salvar blob e converter para base64
+          lastPdfBlob = doc.output('blob');
+          const pdfBase64 = doc.output('datauristring').split(',')[1];
+          
+          // Mostrar botões alternativos
           document.getElementById('btn-view-browser').style.display = 'block';
+          document.getElementById('btn-download-direct').style.display = 'block';
           
-          // Para WebView, criar um link que force abertura no navegador
-          const downloadLink = document.createElement('a');
-          downloadLink.href = pdfUrl;
-          downloadLink.target = '_blank';
-          downloadLink.rel = 'noopener noreferrer';
-          downloadLink.download = filename;
-          
-          // Tentar abrir em nova janela (navegador externo)
-          const opened = window.open(pdfUrl, '_blank');
-          
-          if (!opened) {
-            // Se popup foi bloqueado, usar método alternativo
-            downloadLink.click();
-          }
+          // Abrir no navegador
+          openPdfInBrowser(pdfBase64, filename);
           
           loadingEl.classList.remove('show');
           
-          // Mostrar instruções ao usuário
+          // Mensagem ao usuário
           setTimeout(function() {
-            alert('PDF gerado! Se não abrir automaticamente, toque no botão "Abrir PDF no Navegador" ou permita pop-ups nas configurações do app.');
+            alert('PDF gerado! Toque em um dos botões abaixo para visualizar ou baixar o PDF.');
           }, 500);
           
         } else {
-          // Para navegadores normais, usar download tradicional
+          // Para navegadores normais: download tradicional
           doc.save(filename);
           loadingEl.classList.remove('show');
           alert('PDF gerado com sucesso!');
@@ -1215,6 +1254,32 @@ body {
       }
     });
     
+    document.getElementById('btn-download-direct').addEventListener('click', function() {
+      if (lastPdfBlob && lastPdfName) {
+        try {
+          // Método de download direto via link
+          const url = URL.createObjectURL(lastPdfBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = lastPdfName;
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          
+          setTimeout(function() {
+            URL.revokeObjectURL(url);
+          }, 1000);
+          
+          alert('Download iniciado! Verifique a pasta de Downloads do seu dispositivo.');
+        } catch (e) {
+          alert('Erro ao fazer download. Tente usar o botão "Abrir PDF no Navegador".');
+        }
+      } else {
+        alert('Por favor, gere o PDF primeiro.');
+      }
+    });
+    
     document.getElementById('btn-new').addEventListener('click', function() {
       appData = {
         name: '',
@@ -1233,8 +1298,11 @@ body {
         URL.revokeObjectURL(lastPdfUrl);
         lastPdfUrl = null;
       }
+      lastPdfBlob = null;
+      lastPdfName = '';
       
       document.getElementById('btn-view-browser').style.display = 'none';
+      document.getElementById('btn-download-direct').style.display = 'none';
       document.getElementById('name').value = '';
       document.getElementById('age').value = '';
       document.getElementById('height').value = '';
