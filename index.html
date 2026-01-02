@@ -402,6 +402,134 @@ body {
     margin: 0 auto;
   }
 }
+
+/* Estilos para Impressão */
+@media print {
+  body {
+    background: #fff;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .app {
+    background: #fff;
+  }
+  
+  .header {
+    background: #667eea !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+    page-break-after: avoid;
+  }
+  
+  .content {
+    padding: 20px;
+    max-width: 100%;
+  }
+  
+  .screen {
+    display: none !important;
+  }
+  
+  #results.active {
+    display: block !important;
+  }
+  
+  .btn {
+    display: none !important;
+  }
+  
+  .result-card {
+    page-break-inside: avoid;
+    border: 2px solid #667eea !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin-bottom: 20px;
+  }
+  
+  .result-card h3 {
+    color: #667eea !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .classification {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+  
+  .classification.normal {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #059669 !important;
+  }
+  
+  .classification.attention {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #d97706 !important;
+  }
+  
+  .classification.warning {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #dc2626 !important;
+  }
+  
+  .interpretation {
+    page-break-inside: avoid;
+    border-left: 5px solid #667eea !important;
+    background: #f0f9ff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .loading {
+    display: none !important;
+  }
+  
+  /* Informações do paciente para impressão */
+  #results::before {
+    content: "INFORMAÇÕES DO PACIENTE";
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+  }
+  
+  #patient-info-print {
+    display: block !important;
+    background: #f0f4ff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 2px solid #667eea;
+    page-break-inside: avoid;
+  }
+  
+  #patient-info-print p {
+    margin: 5px 0;
+    color: #1f2937;
+  }
+  
+  #patient-info-print strong {
+    color: #667eea;
+  }
+  
+  /* Rodapé */
+  #results::after {
+    content: "BodyCheck - Avaliação da Composição Corporal | Relatório gerado em " attr(data-date);
+    display: block;
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+    font-size: 10px;
+    color: #6b7280;
+    text-align: center;
+  }
+}
 </style>
 </head>
 <body>
@@ -488,6 +616,14 @@ body {
     <div id="results" class="screen">
       <h2 class="section-title">Resultados da Avaliação</h2>
       
+      <!-- Informações do paciente (ocultas na tela, visíveis na impressão) -->
+      <div id="patient-info-print" style="display:none;">
+        <p><strong>Nome:</strong> <span id="print-name"></span></p>
+        <p><strong>Sexo:</strong> <span id="print-sex"></span> | <strong>Idade:</strong> <span id="print-age"></span> anos</p>
+        <p><strong>Altura:</strong> <span id="print-height"></span> cm | <strong>Peso:</strong> <span id="print-weight"></span> kg</p>
+        <p><strong>Equação utilizada:</strong> <span id="print-equation"></span></p>
+      </div>
+      
       <div class="result-card">
         <h3>Índice de Massa Corporal (IMC)</h3>
         <div class="result-item">
@@ -522,9 +658,7 @@ body {
       
       <div class="interpretation" id="r-interp"></div>
       
-      <button class="btn" id="btn-pdf">📄 Gerar Relatório PDF</button>
-      <button class="btn btn-secondary" id="btn-view-browser" style="display:none;">🌐 Abrir PDF no Navegador</button>
-      <button class="btn btn-secondary" id="btn-download-direct" style="display:none;">📥 Download Direto do PDF</button>
+      <button class="btn" id="btn-print">🖨️ Imprimir Relatório</button>
       <button class="btn btn-secondary" id="btn-new">🔄 Nova Avaliação</button>
     </div>
   </div>
@@ -533,11 +667,9 @@ body {
 <div id="loading" class="loading">
   <div class="loading-content">
     <div class="spinner"></div>
-    <div class="loading-text">Gerando PDF...</div>
+    <div class="loading-text">Processando...</div>
   </div>
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 (function() {
@@ -555,9 +687,6 @@ body {
   
   let results = {};
   let currentFolds = {};
-  let lastPdfUrl = null;
-  let lastPdfBlob = null;
-  let lastPdfName = '';
   
   function goToScreen(screenId) {
     const screens = document.querySelectorAll('.screen');
@@ -866,348 +995,67 @@ body {
     
     document.getElementById('r-interp').innerHTML = '<strong>Interpretação:</strong><br>' + results.interp;
     
+    // Preencher informações para impressão
+    document.getElementById('print-name').textContent = appData.name;
+    document.getElementById('print-sex').textContent = appData.sex === 'm' ? 'Masculino' : 'Feminino';
+    document.getElementById('print-age').textContent = appData.age;
+    document.getElementById('print-height').textContent = appData.height;
+    document.getElementById('print-weight').textContent = appData.weight;
+    document.getElementById('print-equation').textContent = appData.eq;
+    
+    // Adicionar data ao elemento results para impressão
+    const resultsEl = document.getElementById('results');
+    resultsEl.setAttribute('data-date', new Date().toLocaleDateString('pt-BR'));
+    
     goToScreen('results');
   }
   
-  function isWebView() {
-    const ua = navigator.userAgent.toLowerCase();
-    const isAndroid = ua.indexOf('android') > -1;
-    const isIOS = ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1;
-    const isWebView = ua.indexOf('wv') > -1 || ua.indexOf('appgeyser') > -1;
-    return (isAndroid || isIOS) && isWebView;
+  function printReport() {
+    // Adicionar instruções antes de imprimir
+    const isWebView = navigator.userAgent.toLowerCase().indexOf('wv') > -1 || 
+                      navigator.userAgent.toLowerCase().indexOf('appgeyser') > -1;
+    
+    if (isWebView) {
+      const confirmPrint = confirm(
+        'Ao clicar em OK, a janela de impressão será aberta.\n\n' +
+        'Para salvar como PDF:\n' +
+        '1. Selecione "Salvar como PDF" ou "Imprimir em PDF"\n' +
+        '2. Escolha a pasta de destino\n' +
+        '3. Toque em "Salvar"\n\n' +
+        'O PDF será salvo na pasta Downloads do seu dispositivo.'
+      );
+      
+      if (!confirmPrint) {
+        return;
+      }
+    }
+    
+    // Abrir janela de impressão
+    window.print();
   }
   
-  function openPdfInBrowser(pdfBase64, filename) {
-    // Método 1: Tentar usar intent do Android (mais compatível com AppGeyser)
-    const isAndroid = navigator.userAgent.toLowerCase().indexOf('android') > -1;
+  function printReport() {
+    // Adicionar instruções antes de imprimir
+    const isWebView = navigator.userAgent.toLowerCase().indexOf('wv') > -1 || 
+                      navigator.userAgent.toLowerCase().indexOf('appgeyser') > -1;
     
-    if (isAndroid) {
-      // Criar URL com intent para abrir no Google Drive ou navegador
-      const intentUrl = 'intent://view/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=data:application/pdf;base64,' + pdfBase64 + ';end';
+    if (isWebView) {
+      const confirmPrint = confirm(
+        'Ao clicar em OK, a janela de impressão será aberta.\n\n' +
+        'Para salvar como PDF:\n' +
+        '1. Selecione "Salvar como PDF" ou "Imprimir em PDF"\n' +
+        '2. Escolha a pasta de destino\n' +
+        '3. Toque em "Salvar"\n\n' +
+        'O PDF será salvo na pasta Downloads do seu dispositivo.'
+      );
       
-      try {
-        window.location.href = intentUrl;
-        return intentUrl;
-      } catch (e) {
-        console.log('Intent falhou, tentando método alternativo');
+      if (!confirmPrint) {
+        return;
       }
     }
     
-    // Método 2: Criar HTML com embed do PDF
-    const pdfHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + filename + '</title><style>*{margin:0;padding:0;box-sizing:border-box}body,html{height:100%;overflow:hidden;font-family:sans-serif}iframe{border:0;width:100%;height:100%}.fallback{padding:20px;text-align:center}.btn{display:inline-block;padding:15px 30px;background:#667eea;color:#fff;text-decoration:none;border-radius:8px;margin:10px;font-weight:600}</style></head><body><iframe src="data:application/pdf;base64,' + pdfBase64 + '#toolbar=1&navpanes=1&scrollbar=1" type="application/pdf"></iframe><div class="fallback"><p>PDF gerado com sucesso!</p><a href="data:application/pdf;base64,' + pdfBase64 + '" download="' + filename + '" class="btn">📥 Baixar PDF</a></div></body></html>';
-    
-    const blob = new Blob([pdfHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    
-    // Tentar múltiplos métodos de abertura
-    try {
-      // Método A: window.open com configurações específicas
-      const opened = window.open(url, '_blank', 'location=yes,toolbar=yes');
-      
-      if (!opened || opened.closed || typeof opened.closed === 'undefined') {
-        throw new Error('Window blocked');
-      }
-    } catch (e) {
-      // Método B: Link temporário
-      const a = document.createElement('a');
-      a.href = url;
-      a.target = '_system'; // Para Cordova/PhoneGap
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(function() {
-        document.body.removeChild(a);
-      }, 100);
-    }
-    
-    // Armazenar para botão alternativo
-    if (lastPdfUrl) {
-      URL.revokeObjectURL(lastPdfUrl);
-    }
-    lastPdfUrl = url;
-    
-    return url;
-  }
-  
-  function generatePDF() {
-    const loadingEl = document.getElementById('loading');
-    loadingEl.classList.add('show');
-    
-    setTimeout(function() {
-      try {
-        const jsPDF = window.jspdf.jsPDF;
-        const doc = new jsPDF();
-        
-        const name = appData.name;
-        const sex = appData.sex;
-        const age = appData.age;
-        const height = appData.height;
-        const weight = appData.weight;
-        const eq = appData.eq;
-        const bmi = results.bmi;
-        const bf = results.bf;
-        const fm = results.fm;
-        const ffm = results.ffm;
-        const bmiC = results.bmiC;
-        const bfC = results.bfC;
-        const interp = results.interp;
-        const folds = results.folds;
-        
-        const sexText = sex === 'm' ? 'Masculino' : 'Feminino';
-        const now = new Date().toLocaleString('pt-BR');
-        
-        const foldNames = {
-          triceps: 'Tríceps',
-          biceps: 'Bíceps',
-          subscapular: 'Subescapular',
-          suprailiac: 'Suprailíaca',
-          chest: 'Peitoral',
-          abdominal: 'Abdominal',
-          thigh: 'Coxa'
-        };
-        
-        let yPos = 20;
-        
-        doc.setFillColor(102, 126, 234);
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(24);
-        doc.setFont(undefined, 'bold');
-        doc.text('BodyCheck', 105, 20, { align: 'center' });
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'normal');
-        doc.text('Relatório de Avaliação da Composição Corporal', 105, 30, { align: 'center' });
-        
-        yPos = 50;
-        doc.setTextColor(0, 0, 0);
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setFillColor(102, 126, 234);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Informações Pessoais', 20, yPos + 6);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.setFillColor(240, 244, 255);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setFont(undefined, 'bold');
-        doc.text('Nome:', 20, yPos + 5);
-        doc.setFont(undefined, 'normal');
-        doc.text(name, 40, yPos + 5);
-        yPos += 12;
-        
-        doc.text('Sexo: ' + sexText, 20, yPos);
-        doc.text('Idade: ' + age + ' anos', 70, yPos);
-        yPos += 6;
-        doc.text('Altura: ' + height + ' cm', 20, yPos);
-        doc.text('Peso: ' + weight + ' kg', 70, yPos);
-        yPos += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setFillColor(102, 126, 234);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Dobras Cutâneas Medidas', 20, yPos + 6);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        for (let key in folds) {
-          doc.setFont(undefined, 'normal');
-          doc.text(foldNames[key] + ':', 20, yPos);
-          doc.setFont(undefined, 'bold');
-          doc.text(folds[key] + ' mm', 70, yPos);
-          yPos += 6;
-        }
-        
-        doc.setFont(undefined, 'italic');
-        doc.setFontSize(9);
-        doc.text('Equação: ' + eq, 20, yPos + 3);
-        yPos += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setFillColor(102, 126, 234);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Índice de Massa Corporal (IMC)', 20, yPos + 6);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text('IMC:', 20, yPos);
-        doc.setFont(undefined, 'bold');
-        doc.text(bmi + ' kg/m²', 70, yPos);
-        yPos += 6;
-        doc.setFont(undefined, 'normal');
-        doc.text('Classificação:', 20, yPos);
-        doc.setFont(undefined, 'bold');
-        doc.text(bmiC, 70, yPos);
-        yPos += 15;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setFillColor(102, 126, 234);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Composição Corporal', 20, yPos + 6);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text('Gordura Corporal:', 20, yPos);
-        doc.setFont(undefined, 'bold');
-        doc.text(bf + '%', 70, yPos);
-        yPos += 6;
-        doc.setFont(undefined, 'normal');
-        doc.text('Classificação:', 20, yPos);
-        doc.setFont(undefined, 'bold');
-        doc.text(bfC, 70, yPos);
-        yPos += 6;
-        doc.setFont(undefined, 'normal');
-        doc.text('Massa Gorda:', 20, yPos);
-        doc.setFont(undefined, 'bold');
-        doc.text(fm + ' kg', 70, yPos);
-        yPos += 6;
-        doc.setFont(undefined, 'normal');
-        doc.text('Massa Livre de Gordura:', 20, yPos);
-        doc.setFont(undefined, 'bold');
-        doc.text(ffm + ' kg', 70, yPos);
-        yPos += 15;
-        
-        const bfNum = parseFloat(bf);
-        const fatWidth = (bfNum / 100) * 160;
-        const ffmWidth = ((100 - bfNum) / 100) * 160;
-        
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(9);
-        doc.text('Massa Gorda (' + bf + '%)', 20, yPos);
-        yPos += 5;
-        doc.setFillColor(220, 53, 69);
-        doc.rect(20, yPos, fatWidth, 6, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text(fm + ' kg', 25, yPos + 4);
-        yPos += 10;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.text('Massa Livre de Gordura (' + (100 - bfNum).toFixed(1) + '%)', 20, yPos);
-        yPos += 5;
-        doc.setFillColor(40, 167, 69);
-        doc.rect(20, yPos, ffmWidth, 6, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text(ffm + ' kg', 25, yPos + 4);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setFillColor(102, 126, 234);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Interpretação dos Resultados', 20, yPos + 6);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        const interpLines = doc.splitTextToSize(interp, 170);
-        doc.text(interpLines, 20, yPos);
-        yPos += (interpLines.length * 6) + 10;
-        
-        doc.addPage();
-        yPos = 20;
-        
-        doc.setFontSize(14);
-        doc.setFont(undefined, 'bold');
-        doc.setFillColor(102, 126, 234);
-        doc.rect(15, yPos, 180, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('Referências Científicas', 20, yPos + 6);
-        yPos += 15;
-        
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        
-        const refs = [
-          'World Health Organization. Obesity: Preventing and Managing the Global Epidemic, 2000.',
-          'Lipschitz, D.A. Screening for nutritional status in the elderly, Primary Care, 1994.',
-          'Jackson, A.S., & Pollock, M.L. Generalized equations for predicting body density of men, British Journal of Nutrition, 1978.',
-          'Jackson, A.S., Pollock, M.L., & Ward, A. Generalized equations for predicting body density of women, Medicine & Science in Sports & Exercise, 1980.',
-          'Durnin, J.V.G.A., & Womersley, J. Body fat assessed from total body density, British Journal of Nutrition, 1974.',
-          'Slaughter, M.H. et al. Skinfold equations for estimation of body fatness in children and youth, Human Biology, 1988.',
-          'Siri, W.E. Body composition from fluid spaces and density, 1956.',
-          'American College of Sports Medicine. Guidelines for Exercise Testing and Prescription, 11th Edition.'
-        ];
-        
-        for (let i = 0; i < refs.length; i++) {
-          const refLines = doc.splitTextToSize('• ' + refs[i], 170);
-          doc.text(refLines, 20, yPos);
-          yPos += (refLines.length * 5) + 3;
-        }
-        
-        yPos += 10;
-        
-        doc.setFillColor(255, 243, 205);
-        doc.rect(15, yPos, 180, 30, 'F');
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text('⚠️ Aviso Legal', 20, yPos + 5);
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(9);
-        const disclaimer = 'Esta avaliação não substitui diagnóstico médico ou nutricional. Os resultados representam estimativas da composição corporal baseadas em equações de predição validadas cientificamente. Para orientação profissional individualizada, consulte um nutricionista ou médico especializado.';
-        const disclaimerLines = doc.splitTextToSize(disclaimer, 170);
-        doc.text(disclaimerLines, 20, yPos + 12);
-        
-        yPos = 280;
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text('Relatório gerado em: ' + now, 105, yPos, { align: 'center' });
-        doc.text('BodyCheck - Avaliação da Composição Corporal', 105, yPos + 5, { align: 'center' });
-        
-        const filename = 'BodyCheck_' + name.replace(/\s/g, '_') + '_' + Date.now() + '.pdf';
-        lastPdfName = filename;
-        
-        // Detectar ambiente e usar método apropriado
-        if (isWebView()) {
-          // Para WebView/AppGeyser: salvar blob e converter para base64
-          lastPdfBlob = doc.output('blob');
-          const pdfBase64 = doc.output('datauristring').split(',')[1];
-          
-          // Mostrar botões alternativos
-          document.getElementById('btn-view-browser').style.display = 'block';
-          document.getElementById('btn-download-direct').style.display = 'block';
-          
-          // Abrir no navegador
-          openPdfInBrowser(pdfBase64, filename);
-          
-          loadingEl.classList.remove('show');
-          
-          // Mensagem ao usuário
-          setTimeout(function() {
-            alert('PDF gerado! Toque em um dos botões abaixo para visualizar ou baixar o PDF.');
-          }, 500);
-          
-        } else {
-          // Para navegadores normais: download tradicional
-          doc.save(filename);
-          loadingEl.classList.remove('show');
-          alert('PDF gerado com sucesso!');
-        }
-        
-      } catch (error) {
-        console.error('Erro ao gerar PDF:', error);
-        loadingEl.classList.remove('show');
-        alert('Erro ao gerar PDF. Por favor, tente novamente.');
-      }
-    }, 500);
+    // Abrir janela de impressão
+    window.print();
   }
   
   document.addEventListener('DOMContentLoaded', function() {
@@ -1242,42 +1090,8 @@ body {
       goToScreen('info');
     });
     
-    document.getElementById('btn-pdf').addEventListener('click', function() {
-      generatePDF();
-    });
-    
-    document.getElementById('btn-view-browser').addEventListener('click', function() {
-      if (lastPdfUrl) {
-        window.open(lastPdfUrl, '_blank');
-      } else {
-        alert('Por favor, gere o PDF primeiro.');
-      }
-    });
-    
-    document.getElementById('btn-download-direct').addEventListener('click', function() {
-      if (lastPdfBlob && lastPdfName) {
-        try {
-          // Método de download direto via link
-          const url = URL.createObjectURL(lastPdfBlob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = lastPdfName;
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          
-          setTimeout(function() {
-            URL.revokeObjectURL(url);
-          }, 1000);
-          
-          alert('Download iniciado! Verifique a pasta de Downloads do seu dispositivo.');
-        } catch (e) {
-          alert('Erro ao fazer download. Tente usar o botão "Abrir PDF no Navegador".');
-        }
-      } else {
-        alert('Por favor, gere o PDF primeiro.');
-      }
+    document.getElementById('btn-print').addEventListener('click', function() {
+      printReport();
     });
     
     document.getElementById('btn-new').addEventListener('click', function() {
@@ -1293,16 +1107,6 @@ body {
       results = {};
       currentFolds = {};
       
-      // Limpar PDF anterior
-      if (lastPdfUrl) {
-        URL.revokeObjectURL(lastPdfUrl);
-        lastPdfUrl = null;
-      }
-      lastPdfBlob = null;
-      lastPdfName = '';
-      
-      document.getElementById('btn-view-browser').style.display = 'none';
-      document.getElementById('btn-download-direct').style.display = 'none';
       document.getElementById('name').value = '';
       document.getElementById('age').value = '';
       document.getElementById('height').value = '';
