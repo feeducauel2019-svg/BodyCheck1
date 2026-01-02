@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>BodyCheck</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.app {
+  max-width: 100%;
+  margin: 0 auto;
+  background: #fff;
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
+  font-weight: 700;
+}
+
+.header p {
+  font-size: 0.9rem;
+  opacity: 0.95;
+}
+
+.content {
+  padding: 1.2rem;
+  padding-bottom: 3rem;
+}
+
+.screen {
+  display: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.screen.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.about {
+  background: linear-gradient(135deg, #f0f4ff 0%, #e6edff 100%);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 2px solid #667eea;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+}
+
+.about p {
+  margin-bottom: 1rem;
+  color: #1f2937;
+  line-height: 1.7;
+  text-align: justify;
+  font-size: 0.95rem;
+}
+
+.about p:last-child {
+  margin-bottom: 0;
+}
+
+.about strong {
+  color: #667eea;
+  font-weight: 700;
+}
+
+.btn {
+  width: 100%;
+  padding: 1.2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  touch-action: manipulation;
+  min-height: 56px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  display: block;
+  text-align: center;
+}
+
+.btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:active {
+  background: #e5e7eb;
+}
+
+.back-btn {
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  margin-top: 0.5rem;
+  box-shadow: none;
+}
+
+.back-btn:active {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.input-group {
+  margin-bottom: 1.3rem;
+}
+
+.input-group label {
+  display: block;
+  color: #1f2937;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  font-size: 1rem;
+}
+
+.input-group input,
+.input-group select {
+  width: 100%;
+  padding: 1.1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  min-height: 54px;
+  background: #fff;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.radio-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.radio-option {
+  padding: 1.2rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.radio-option:active {
+  transform: scale(0.97);
+}
+
+.radio-option.selected {
+  border-color: #667eea;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.radio-icon {
+  font-size: 2.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.result-card {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  border: 2px solid rgba(102, 126, 234, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.result-card h3 {
+  color: #667eea;
+  margin-bottom: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.result-item:last-child {
+  border-bottom: none;
+}
+
+.result-label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.result-value {
+  color: #1f2937;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.classification {
+  display: inline-block;
+  padding: 0.5rem 1.1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.classification.normal {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.classification.attention {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.classification.warning {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.interpretation {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 1.3rem;
+  border-radius: 14px;
+  margin: 1.5rem 0;
+  border-left: 5px solid #667eea;
+  line-height: 1.7;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.help-icon {
+  background: #667eea;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  float: right;
+  margin-left: 10px;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.help-popup {
+  display: none;
+  background: #f9fafb;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 1.2rem;
+  margin-top: 0.8rem;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #374151;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.help-popup.show {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.section-title {
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.info-text {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.loading {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading.show {
+  display: flex;
+}
+
+.loading-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.spinner {
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #374151;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+@media screen and (max-width: 360px) {
+  .header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .btn {
+    font-size: 1rem;
+    padding: 1rem;
+  }
+  
+  .content {
+    padding: 1rem;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>BodyCheck</h1>
+    <p>Avaliação da Composição Corporal</p>
+  </div>
+  
+  <div class="content">
+    <!-- TELA 1: HOME -->
+    <div id="home" class="screen active">
+      <div class="about">
+        <p>O <strong>BodyCheck</strong> é um aplicativo desenvolvido para a avaliação da composição corporal de crianças, adolescentes, adultos e idosos, de ambos os sexos.</p>
+        <p>O app utiliza medidas de dobras cutâneas para estimativas da composição corporal, com base em fórmulas provenientes de estudos científicos validados.</p>
+        <p>A plataforma realiza a aplicação automática das equações e gera relatórios com os resultados, facilitando a interpretação e a padronização das avaliações.</p>
+      </div>
+      
+      <div class="input-group">
+        <label>🌐 Idioma / Language</label>
+        <select id="lang">
+          <option value="pt">Português (Brasil)</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      
+      <button class="btn" id="btn-start">▶️ Iniciar Avaliação</button>
+    </div>
+
+    <!-- TELA 2: INFORMAÇÕES -->
+    <div id="info" class="screen">
+      <h2 class="section-title">Informações Pessoais</h2>
+      
+      <div class="input-group">
+        <label>Nome Completo</label>
+        <input type="text" id="name" placeholder="Digite o nome completo">
+      </div>
+      
+      <div class="input-group">
+        <label>Sexo</label>
+        <div class="radio-group">
+          <div class="radio-option" data-sex="m">
+            <div class="radio-icon">👨</div>
+            <div>Masculino</div>
+          </div>
+          <div class="radio-option" data-sex="f">
+            <div class="radio-icon">👩</div>
+            <div>Feminino</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label>Idade (anos)</label>
+        <input type="number" id="age" placeholder="Digite a idade" min="5" max="120">
+      </div>
+      
+      <div class="input-group">
+        <label>Altura (cm)</label>
+        <input type="number" id="height" placeholder="Digite a altura" step="0.1" min="50" max="250">
+      </div>
+      
+      <div class="input-group">
+        <label>Peso Corporal (kg)</label>
+        <input type="number" id="weight" placeholder="Digite o peso" step="0.1" min="10" max="300">
+      </div>
+      
+      <button class="btn" id="btn-continue">Continuar</button>
+      <button class="btn back-btn" id="btn-back-info">Voltar</button>
+    </div>
+
+    <!-- TELA 3: DOBRAS -->
+    <div id="folds" class="screen">
+      <h2 class="section-title">Medidas de Dobras Cutâneas</h2>
+      <p class="info-text">Digite as medidas em milímetros (mm)</p>
+      
+      <div id="fold-inputs"></div>
+      
+      <button class="btn" id="btn-calculate">Calcular</button>
+      <button class="btn back-btn" id="btn-back-folds">Voltar</button>
+    </div>
+
+    <!-- TELA 4: RESULTADOS -->
+    <div id="results" class="screen">
+      <h2 class="section-title">Resultados da Avaliação</h2>
+      
+      <div class="result-card">
+        <h3>Índice de Massa Corporal (IMC)</h3>
+        <div class="result-item">
+          <span class="result-label">IMC</span>
+          <span class="result-value" id="r-bmi">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Classificação</span>
+          <span id="r-bmi-class">--</span>
+        </div>
+      </div>
+      
+      <div class="result-card">
+        <h3>Composição Corporal</h3>
+        <div class="result-item">
+          <span class="result-label">Percentual de Gordura</span>
+          <span class="result-value" id="r-bf">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Classificação</span>
+          <span id="r-bf-class">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Massa Gorda</span>
+          <span class="result-value" id="r-fm">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Massa Livre de Gordura</span>
+          <span class="result-value" id="r-ffm">--</span>
+        </div>
+      </div>
+      
+      <div class="interpretation" id="r-interp"></div>
+      
+      <button class="btn" id="btn-pdf">📄 Gerar Relatório PDF</button>
+      <button class="btn btn-secondary" id="btn-new">🔄 Nova Avaliação</button>
+    </div>
+  </div>
+</div>
+
+<div id="loading" class="loading">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <div class="loading-text">Gerando PDF...</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+(function() {
+  'use strict';
+  
+  let appData = {
+    name: '',
+    sex: '',
+    age: 0,
+    height: 0,
+    weight: 0,
+    eq: '',
+    foldIds: []
+  };
+  
+  let results = {};
+  let currentFolds = {};
+  
+  function goToScreen(screenId) {
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(function(screen) {
+      screen.classList.remove('active');
+    });
+    
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+      targetScreen.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+  }
+  
+  function selectSex(element, value) {
+    const options = document.querySelectorAll('.radio-option');
+    options.forEach(function(opt) {
+      opt.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    appData.sex = value;
+  }
+  
+  function validateInfo() {
+    const name = document.getElementById('name').value.trim();
+    const age = parseFloat(document.getElementById('age').value);
+    const height = parseFloat(document.getElementById('height').value);
+    const weight = parseFloat(document.getElementById('weight').value);
+    
+    if (!name) {
+      alert('Digite o nome completo');
+      return false;
+    }
+    
+    if (!appData.sex) {
+      alert('Selecione o sexo');
+      return false;
+    }
+    
+    if (!age || age < 5 || age > 120) {
+      alert('Idade inválida (5-120 anos)');
+      return false;
+    }
+    
+    if (!height || height < 50 || height > 250) {
+      alert('Altura inválida (50-250 cm)');
+      return false;
+    }
+    
+    if (!weight || weight < 10 || weight > 300) {
+      alert('Peso inválido (10-300 kg)');
+      return false;
+    }
+    
+    appData.name = name;
+    appData.age = age;
+    appData.height = height;
+    appData.weight = weight;
+    
+    return true;
+  }
+  
+  function setupFolds() {
+    const sex = appData.sex;
+    const age = appData.age;
+    let folds = [];
+    
+    if (age <= 17) {
+      folds = ['triceps', 'subscapular'];
+      appData.eq = 'Slaughter et al. (1988)';
+    } else if (age <= 59) {
+      if (sex === 'm') {
+        folds = ['chest', 'abdominal', 'thigh'];
+        appData.eq = 'Jackson & Pollock (1978)';
+      } else {
+        folds = ['triceps', 'suprailiac', 'thigh'];
+        appData.eq = 'Jackson, Pollock & Ward (1980)';
+      }
+    } else {
+      folds = ['triceps', 'biceps', 'subscapular', 'suprailiac'];
+      appData.eq = 'Durnin & Womersley (1974)';
+    }
+    
+    const foldNames = {
+      triceps: {
+        name: 'Tríceps (Tricipital)',
+        desc: 'Medida na parte posterior do braço, exatamente no ponto médio entre o ombro (acrômio) e o cotovelo (olécrano). A dobra é coletada na vertical, com o braço relaxado e estendido ao lado do corpo.'
+      },
+      biceps: {
+        name: 'Bíceps (Bicipital)',
+        desc: 'Medida na parte anterior do braço, no mesmo nível da dobra tricipital. A dobra é coletada na vertical, com o braço relaxado e a palma da mão voltada para frente.'
+      },
+      subscapular: {
+        name: 'Subescapular',
+        desc: 'Medida 1 a 2 cm abaixo do ângulo inferior da escápula (omoplata). A dobra é coletada na diagonal, acompanhando a inclinação natural da pele.'
+      },
+      suprailiac: {
+        name: 'Suprailíaca',
+        desc: 'Medida logo acima da crista ilíaca, na linha média axilar (linha lateral do tronco). A dobra é coletada na diagonal, seguindo a orientação natural do osso do quadril.'
+      },
+      chest: {
+        name: 'Peitoral',
+        desc: 'Medida na região peitoral, entre o mamilo e a axila. A dobra é coletada na diagonal.'
+      },
+      abdominal: {
+        name: 'Abdominal',
+        desc: 'Medida aproximadamente 2 cm à direita do umbigo. A dobra é coletada na vertical, com o indivíduo em posição relaxada.'
+      },
+      thigh: {
+        name: 'Coxa',
+        desc: 'Medida na parte anterior da coxa, no ponto médio entre a virilha e a borda superior da patela (joelho). A dobra é coletada na vertical, com o peso corporal distribuído igualmente entre as pernas.'
+      }
+    };
+    
+    const container = document.getElementById('fold-inputs');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < folds.length; i++) {
+      const fold = folds[i];
+      const div = document.createElement('div');
+      div.className = 'input-group';
+      div.innerHTML = '<label>' + foldNames[fold].name + ' (mm) <span class="help-icon" data-help="h-' + fold + '">?</span></label>' +
+        '<input type="number" id="f-' + fold + '" placeholder="Digite a medida" step="0.1" min="1" max="100">' +
+        '<div id="h-' + fold + '" class="help-popup"><strong>Como medir:</strong><br>' + foldNames[fold].desc + '</div>';
+      container.appendChild(div);
+    }
+    
+    appData.foldIds = folds;
+    
+    setTimeout(function() {
+      const helpIcons = container.querySelectorAll('.help-icon');
+      helpIcons.forEach(function(icon) {
+        icon.addEventListener('click', function() {
+          const helpId = this.getAttribute('data-help');
+          toggleHelp(helpId);
+        });
+      });
+    }, 100);
+  }
+  
+  function toggleHelp(helpId) {
+    const allPopups = document.querySelectorAll('.help-popup');
+    const targetPopup = document.getElementById(helpId);
+    
+    allPopups.forEach(function(popup) {
+      if (popup.id !== helpId) {
+        popup.classList.remove('show');
+      }
+    });
+    
+    if (targetPopup) {
+      targetPopup.classList.toggle('show');
+    }
+  }
+  
+  function calculate() {
+    currentFolds = {};
+    let allValid = true;
+    
+    for (let i = 0; i < appData.foldIds.length; i++) {
+      const foldId = appData.foldIds[i];
+      const input = document.getElementById('f-' + foldId);
+      const value = parseFloat(input.value);
+      
+      if (!value || value < 1 || value > 100) {
+        allValid = false;
+      } else {
+        currentFolds[foldId] = value;
+      }
+    }
+    
+    if (!allValid) {
+      alert('Digite todas as medidas (1-100 mm)');
+      return;
+    }
+    
+    const sex = appData.sex;
+    const age = appData.age;
+    const height = appData.height;
+    const weight = appData.weight;
+    const h = height / 100;
+    const bmi = (weight / (h * h)).toFixed(1);
+    
+    let bd, bf;
+    
+    if (age <= 17) {
+      const sum = currentFolds.triceps + currentFolds.subscapular;
+      bf = sex === 'm' ? 0.735 * sum + 1.0 : 0.610 * sum + 5.1;
+    } else if (age <= 59) {
+      if (sex === 'm') {
+        const sum = currentFolds.chest + currentFolds.abdominal + currentFolds.thigh;
+        bd = 1.10938 - (0.0008267 * sum) + (0.0000016 * sum * sum) - (0.0002574 * age);
+      } else {
+        const sum = currentFolds.triceps + currentFolds.suprailiac + currentFolds.thigh;
+        bd = 1.0994921 - (0.0009929 * sum) + (0.0000023 * sum * sum) - (0.0001392 * age);
+      }
+      bf = ((4.95 / bd) - 4.50) * 100;
+    } else {
+      const sum = currentFolds.triceps + currentFolds.biceps + currentFolds.subscapular + currentFolds.suprailiac;
+      bd = sex === 'm' ? 1.1765 - (0.0744 * Math.log10(sum)) : 1.1567 - (0.0717 * Math.log10(sum));
+      bf = ((4.95 / bd) - 4.50) * 100;
+    }
+    
+    const fm = (bf / 100) * weight;
+    const ffm = weight - fm;
+    
+    results = {
+      bmi: bmi,
+      bf: bf.toFixed(1),
+      fm: fm.toFixed(1),
+      ffm: ffm.toFixed(1),
+      bmiC: '',
+      bfC: '',
+      folds: {}
+    };
+    
+    for (let key in currentFolds) {
+      results.folds[key] = currentFolds[key];
+    }
+    
+    let bmiC, bmiCol;
+    if (age >= 60) {
+      if (bmi < 22) {
+        bmiC = 'Abaixo do peso';
+        bmiCol = 'attention';
+      } else if (bmi <= 27) {
+        bmiC = 'Peso normal';
+        bmiCol = 'normal';
+      } else {
+        bmiC = 'Sobrepeso';
+        bmiCol = 'warning';
+      }
+    } else {
+      if (bmi < 18.5) {
+        bmiC = 'Abaixo do peso';
+        bmiCol = 'attention';
+      } else if (bmi < 25) {
+        bmiC = 'Peso normal';
+        bmiCol = 'normal';
+      } else if (bmi < 30) {
+        bmiC = 'Sobrepeso';
+        bmiCol = 'attention';
+      } else {
+        bmiC = 'Obesidade';
+        bmiCol = 'warning';
+      }
+    }
+    
+    let bfC, bfCol;
+    const bfNum = parseFloat(bf);
+    
+    if (sex === 'f') {
+      if (bfNum >= 20 && bfNum <= 29) {
+        bfC = 'Adequado';
+        bfCol = 'normal';
+      } else if (bfNum >= 30) {
+        bfC = 'Alto';
+        bfCol = 'warning';
+      } else {
+        bfC = 'Baixo';
+        bfCol = 'attention';
+      }
+    } else {
+      if (bfNum >= 15 && bfNum <= 24) {
+        bfC = 'Adequado';
+        bfCol = 'normal';
+      } else if (bfNum >= 25) {
+        bfC = 'Alto';
+        bfCol = 'warning';
+      } else {
+        bfC = 'Baixo';
+        bfCol = 'attention';
+      }
+    }
+    
+    results.bmiC = bmiC;
+    results.bfC = bfC;
+    
+    document.getElementById('r-bmi').textContent = bmi;
+    document.getElementById('r-bf').textContent = results.bf + '%';
+    document.getElementById('r-fm').textContent = results.fm + ' kg';
+    document.getElementById('r-ffm').textContent = results.ffm + ' kg';
+    
+    document.getElementById('r-bmi-class').innerHTML = '<span class="classification ' + bmiCol + '">' + bmiC + '</span>';
+    document.getElementById('r-bf-class').innerHTML = '<span class="classification ' + bfCol + '">' + bfC + '</span>';
+    
+    let interpretation = [];
+    
+    if (bmiCol === 'normal') {
+      interpretation.push('Seu IMC está dentro da faixa normal.');
+    } else if (bmiCol === 'warning') {
+      interpretation.push('Seu IMC indica excesso de peso corporal.');
+    } else {
+      interpretation.push('Seu IMC está abaixo da faixa recomendada.');
+    }
+    
+    if (bfCol === 'normal') {
+      interpretation.push('Seu percentual de gordura está adequado.');
+    } else if (bfCol === 'warning') {
+      interpretation.push('Seu percentual de gordura está acima do recomendado.');
+    } else {
+      interpretation.push('Seu percentual de gordura está abaixo do recomendado.');
+    }
+    
+    results.interp = interpretation.join(' ');
+    
+    document.getElementById('r-interp').innerHTML = '<strong>Interpretação:</strong><br>' + results.interp;
+    
+    goToScreen('results');
+  }
+  
+  function generatePDF() {
+    const loadingEl = document.getElementById('loading');
+    loadingEl.classList.add('show');
+    
+    setTimeout(function() {
+      try {
+        const jsPDF = window.jspdf.jsPDF;
+        const doc = new jsPDF();
+        
+        const name = appData.name;
+        const sex = appData.sex;
+        const age = appData.age;
+        const height = appData.height;
+        const weight = appData.weight;
+        const eq = appData.eq;
+        const bmi = results.bmi;
+        const bf = results.bf;
+        const fm = results.fm;
+        const ffm = results.ffm;
+        const bmiC = results.bmiC;
+        const bfC = results.bfC;
+        const interp = results.interp;
+        const folds = results.folds;
+        
+        const sexText = sex === 'm' ? 'Masculino' : 'Feminino';
+        const now = new Date().toLocaleString('pt-BR');
+        
+        const foldNames = {
+          triceps: 'Tríceps',
+          biceps: 'Bíceps',
+          subscapular: 'Subescapular',
+          suprailiac: 'Suprailíaca',
+          chest: 'Peitoral',
+          abdominal: 'Abdominal',
+          thigh: 'Coxa'
+        };
+        
+        let yPos = 20;
+        
+        doc.setFillColor(102, 126, 234);
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        doc.setFont(undefined, 'bold');
+        doc.text('BodyCheck', 105, 20, { align: 'center' });
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'normal');
+        doc.text('Relatório de Avaliação da Composição Corporal', 105, 30, { align: 'center' });
+        
+        yPos = 50;
+        doc.setTextColor(0, 0, 0);
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setFillColor(102, 126, 234);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Informações Pessoais', 20, yPos + 6);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.setFillColor(240, 244, 255);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setFont(undefined, 'bold');
+        doc.text('Nome:', 20, yPos + 5);
+        doc.setFont(undefined, 'normal');
+        doc.text(name, 40, yPos + 5);
+        yPos += 12;
+        
+        doc.text('Sexo: ' + sexText, 20, yPos);
+        doc.text('Idade: ' + age + ' anos', 70, yPos);
+        yPos += 6;
+        doc.text('Altura: ' + height + ' cm', 20, yPos);
+        doc.text('Peso: ' + weight + ' kg', 70, yPos);
+        yPos += 15;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setFillColor(102, 126, 234);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Dobras Cutâneas Medidas', 20, yPos + 6);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        for (let key in folds) {
+          doc.setFont(undefined, 'normal');
+          doc.text(foldNames[key] + ':', 20, yPos);
+          doc.setFont(undefined, 'bold');
+          doc.text(folds[key] + ' mm', 70, yPos);
+          yPos += 6;
+        }
+        
+        doc.setFont(undefined, 'italic');
+        doc.setFontSize(9);
+        doc.text('Equação: ' + eq, 20, yPos + 3);
+        yPos += 15;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setFillColor(102, 126, 234);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Índice de Massa Corporal (IMC)', 20, yPos + 6);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('IMC:', 20, yPos);
+        doc.setFont(undefined, 'bold');
+        doc.text(bmi + ' kg/m²', 70, yPos);
+        yPos += 6;
+        doc.setFont(undefined, 'normal');
+        doc.text('Classificação:', 20, yPos);
+        doc.setFont(undefined, 'bold');
+        doc.text(bmiC, 70, yPos);
+        yPos += 15;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setFillColor(102, 126, 234);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Composição Corporal', 20, yPos + 6);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text('Gordura Corporal:', 20, yPos);
+        doc.setFont(undefined, 'bold');
+        doc.text(bf + '%', 70, yPos);
+        yPos += 6;
+        doc.setFont(undefined, 'normal');
+        doc.text('Classificação:', 20, yPos);
+        doc.setFont(undefined, 'bold');
+        doc.text(bfC, 70, yPos);
+        yPos += 6;
+        doc.setFont(undefined, 'normal');
+        doc.text('Massa Gorda:', 20, yPos);
+        doc.setFont(undefined, 'bold');
+        doc.text(fm + ' kg', 70, yPos);
+        yPos += 6;
+        doc.setFont(undefined, 'normal');
+        doc.text('Massa Livre de Gordura:', 20, yPos);
+        doc.setFont(undefined, 'bold');
+        doc.text(ffm + ' kg', 70, yPos);
+        yPos += 15;
+        
+        const bfNum = parseFloat(bf);
+        const fatWidth = (bfNum / 100) * 160;
+        const ffmWidth = ((100 - bfNum) / 100) * 160;
+        
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        doc.text('Massa Gorda (' + bf + '%)', 20, yPos);
+        yPos += 5;
+        doc.setFillColor(220, 53, 69);
+        doc.rect(20, yPos, fatWidth, 6, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text(fm + ' kg', 25, yPos + 4);
+        yPos += 10;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.text('Massa Livre de Gordura (' + (100 - bfNum).toFixed(1) + '%)', 20, yPos);
+        yPos += 5;
+        doc.setFillColor(40, 167, 69);
+        doc.rect(20, yPos, ffmWidth, 6, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text(ffm + ' kg', 25, yPos + 4);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setFillColor(102, 126, 234);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Interpretação dos Resultados', 20, yPos + 6);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        const interpLines = doc.splitTextToSize(interp, 170);
+        doc.text(interpLines, 20, yPos);
+        yPos += (interpLines.length * 6) + 10;
+        
+        doc.addPage();
+        yPos = 20;
+        
+        doc.setFontSize(14);
+        doc.setFont(undefined, 'bold');
+        doc.setFillColor(102, 126, 234);
+        doc.rect(15, yPos, 180, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Referências Científicas', 20, yPos + 6);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        
+        const refs = [
+          'World Health Organization. Obesity: Preventing and Managing the Global Epidemic, 2000.',
+          'Lipschitz, D.A. Screening for nutritional status in the elderly, Primary Care, 1994.',
+          'Jackson, A.S., & Pollock, M.L. Generalized equations for predicting body density of men, British Journal of Nutrition, 1978.',
+          'Jackson, A.S., Pollock, M.L., & Ward, A. Generalized equations for predicting body density of women, Medicine & Science in Sports & Exercise, 1980.',
+          'Durnin, J.V.G.A., & Womersley, J. Body fat assessed from total body density, British Journal of Nutrition, 1974.',
+          'Slaughter, M.H. et al. Skinfold equations for estimation of body fatness in children and youth, Human Biology, 1988.',
+          'Siri, W.E. Body composition from fluid spaces and density, 1956.',
+          'American College of Sports Medicine. Guidelines for Exercise Testing and Prescription, 11th Edition.'
+        ];
+        
+        for (let i = 0; i < refs.length; i++) {
+          const refLines = doc.splitTextToSize('• ' + refs[i], 170);
+          doc.text(refLines, 20, yPos);
+          yPos += (refLines.length * 5) + 3;
+        }
+        
+        yPos += 10;
+        
+        doc.setFillColor(255, 243, 205);
+        doc.rect(15, yPos, 180, 30, 'F');
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text('⚠️ Aviso Legal', 20, yPos + 5);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        const disclaimer = 'Esta avaliação não substitui diagnóstico médico ou nutricional. Os resultados representam estimativas da composição corporal baseadas em equações de predição validadas cientificamente. Para orientação profissional individualizada, consulte um nutricionista ou médico especializado.';
+        const disclaimerLines = doc.splitTextToSize(disclaimer, 170);
+        doc.text(disclaimerLines, 20, yPos + 12);
+        
+        yPos = 280;
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Relatório gerado em: ' + now, 105, yPos, { align: 'center' });
+        doc.text('BodyCheck - Avaliação da Composição Corporal', 105, yPos + 5, { align: 'center' });
+        
+        const filename = 'BodyCheck_' + name.replace(/\s/g, '_') + '_' + Date.now() + '.pdf';
+        doc.save(filename);
+        
+        loadingEl.classList.remove('show');
+        alert('PDF gerado com sucesso!');
+        
+      } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        loadingEl.classList.remove('show');
+        alert('Erro ao gerar PDF. Por favor, tente novamente.');
+      }
+    }, 500);
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('btn-start').addEventListener('click', function() {
+      goToScreen('info');
+    });
+    
+    const sexOptions = document.querySelectorAll('.radio-option');
+    for (let i = 0; i < sexOptions.length; i++) {
+      sexOptions[i].addEventListener('click', function() {
+        const value = this.getAttribute('data-sex');
+        selectSex(this, value);
+      });
+    }
+    
+    document.getElementById('btn-continue').addEventListener('click', function() {
+      if (validateInfo()) {
+        setupFolds();
+        goToScreen('folds');
+      }
+    });
+    
+    document.getElementById('btn-back-info').addEventListener('click', function() {
+      goToScreen('home');
+    });
+    
+    document.getElementById('btn-calculate').addEventListener('click', function() {
+      calculate();
+    });
+    
+    document.getElementById('btn-back-folds').addEventListener('click', function() {
+      goToScreen('info');
+    });
+    
+    document.getElementById('btn-pdf').addEventListener('click', function() {
+      generatePDF();
+    });
+    
+    document.getElementById('btn-new').addEventListener('click', function() {
+      appData = {
+        name: '',
+        sex: '',
+        age: 0,
+        height: 0,
+        weight: 0,
+        eq: '',
+        foldIds: []
+      };
+      results = {};
+      currentFolds = {};
+      
+      document.getElementById('name').value = '';
+      document.getElementById('age').value = '';
+      document.getElementById('height').value = '';
+      document.getElementById('weight').value = '';
+      
+      const sexOptions = document.querySelectorAll('.radio-option');
+      for (let i = 0; i < sexOptions.length; i++) {
+        sexOptions[i].classList.remove('selected');
+      }
+      
+      goToScreen('home');
+    });
+  });
+  
+})();
+</script>
+</body>
+</html>
