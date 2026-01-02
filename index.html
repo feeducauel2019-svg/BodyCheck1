@@ -523,6 +523,7 @@ body {
       <div class="interpretation" id="r-interp"></div>
       
       <button class="btn" id="btn-pdf">📄 Gerar Relatório PDF</button>
+      <button class="btn btn-secondary" id="btn-view-browser" style="display:none;">🌐 Abrir PDF no Navegador</button>
       <button class="btn btn-secondary" id="btn-new">🔄 Nova Avaliação</button>
     </div>
   </div>
@@ -553,6 +554,7 @@ body {
   
   let results = {};
   let currentFolds = {};
+  let lastPdfUrl = null;
   
   function goToScreen(screenId) {
     const screens = document.querySelectorAll('.screen');
@@ -864,6 +866,14 @@ body {
     goToScreen('results');
   }
   
+  function isWebView() {
+    const ua = navigator.userAgent.toLowerCase();
+    const isAndroid = ua.indexOf('android') > -1;
+    const isIOS = ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1;
+    const isWebView = ua.indexOf('wv') > -1 || ua.indexOf('appgeyser') > -1;
+    return (isAndroid || isIOS) && isWebView;
+  }
+  
   function generatePDF() {
     const loadingEl = document.getElementById('loading');
     loadingEl.classList.add('show');
@@ -1108,10 +1118,50 @@ body {
         doc.text('BodyCheck - Avaliação da Composição Corporal', 105, yPos + 5, { align: 'center' });
         
         const filename = 'BodyCheck_' + name.replace(/\s/g, '_') + '_' + Date.now() + '.pdf';
-        doc.save(filename);
         
-        loadingEl.classList.remove('show');
-        alert('PDF gerado com sucesso!');
+        // Gerar PDF como blob para abrir no navegador
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        
+        // Armazenar URL para uso posterior
+        if (lastPdfUrl) {
+          URL.revokeObjectURL(lastPdfUrl);
+        }
+        lastPdfUrl = pdfUrl;
+        
+        // Detectar se está em WebView e abrir no navegador externo
+        if (isWebView()) {
+          // Mostrar botão alternativo
+          document.getElementById('btn-view-browser').style.display = 'block';
+          
+          // Para WebView, criar um link que force abertura no navegador
+          const downloadLink = document.createElement('a');
+          downloadLink.href = pdfUrl;
+          downloadLink.target = '_blank';
+          downloadLink.rel = 'noopener noreferrer';
+          downloadLink.download = filename;
+          
+          // Tentar abrir em nova janela (navegador externo)
+          const opened = window.open(pdfUrl, '_blank');
+          
+          if (!opened) {
+            // Se popup foi bloqueado, usar método alternativo
+            downloadLink.click();
+          }
+          
+          loadingEl.classList.remove('show');
+          
+          // Mostrar instruções ao usuário
+          setTimeout(function() {
+            alert('PDF gerado! Se não abrir automaticamente, toque no botão "Abrir PDF no Navegador" ou permita pop-ups nas configurações do app.');
+          }, 500);
+          
+        } else {
+          // Para navegadores normais, usar download tradicional
+          doc.save(filename);
+          loadingEl.classList.remove('show');
+          alert('PDF gerado com sucesso!');
+        }
         
       } catch (error) {
         console.error('Erro ao gerar PDF:', error);
@@ -1157,6 +1207,14 @@ body {
       generatePDF();
     });
     
+    document.getElementById('btn-view-browser').addEventListener('click', function() {
+      if (lastPdfUrl) {
+        window.open(lastPdfUrl, '_blank');
+      } else {
+        alert('Por favor, gere o PDF primeiro.');
+      }
+    });
+    
     document.getElementById('btn-new').addEventListener('click', function() {
       appData = {
         name: '',
@@ -1170,6 +1228,13 @@ body {
       results = {};
       currentFolds = {};
       
+      // Limpar PDF anterior
+      if (lastPdfUrl) {
+        URL.revokeObjectURL(lastPdfUrl);
+        lastPdfUrl = null;
+      }
+      
+      document.getElementById('btn-view-browser').style.display = 'none';
       document.getElementById('name').value = '';
       document.getElementById('age').value = '';
       document.getElementById('height').value = '';
