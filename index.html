@@ -830,6 +830,205 @@ body {
   
   let results = {};
   let currentFolds = {};
+  let currentLang = 'pt';
+  
+  // Traduções
+  const translations = {
+    pt: {
+      appTitle: 'BodyCheck',
+      appSubtitle: 'Avaliação da Composição Corporal',
+      aboutText1: 'O <strong>BodyCheck</strong> é um aplicativo desenvolvido para a avaliação da composição corporal de crianças, adolescentes, adultos e idosos, de ambos os sexos.',
+      aboutText2: 'O app utiliza medidas de dobras cutâneas para estimativas da composição corporal, com base em fórmulas provenientes de estudos científicos validados.',
+      aboutText3: 'A plataforma realiza a aplicação automática das equações e gera relatórios com os resultados, facilitando a interpretação e a padronização das avaliações.',
+      language: 'Idioma / Language',
+      startBtn: '▶️ Iniciar Avaliação',
+      personalInfo: 'Informações Pessoais',
+      fullName: 'Nome Completo',
+      fullNamePlaceholder: 'Digite o nome completo',
+      sex: 'Sexo',
+      male: 'Masculino',
+      female: 'Feminino',
+      age: 'Idade (anos)',
+      agePlaceholder: 'Digite a idade',
+      height: 'Altura (cm)',
+      heightPlaceholder: 'Digite a altura',
+      weight: 'Peso Corporal (kg)',
+      weightPlaceholder: 'Digite o peso',
+      continueBtn: 'Continuar',
+      backBtn: 'Voltar',
+      skinfoldMeasures: 'Medidas de Dobras Cutâneas',
+      enterMeasures: 'Digite as medidas em milímetros (mm)',
+      measurePlaceholder: 'Digite a medida',
+      calculateBtn: 'Calcular',
+      results: 'Resultados da Avaliação',
+      patientInfo: 'Informações do Paciente',
+      name: 'Nome',
+      skinfoldsMeasured: 'Dobras Cutâneas Medidas',
+      equationUsed: 'Equação utilizada',
+      bmi: 'Índice de Massa Corporal (IMC)',
+      classification: 'Classificação',
+      bodyComposition: 'Composição Corporal',
+      bodyFatPercentage: 'Percentual de Gordura',
+      fatMass: 'Massa Gorda',
+      fatFreeMass: 'Massa Livre de Gordura',
+      interpretation: 'Interpretação',
+      compositionChart: '📊 Gráfico de Composição Corporal',
+      references: '📚 Referências Científicas',
+      disclaimer: '⚠️ Aviso Legal: Esta avaliação não substitui diagnóstico médico ou nutricional. Os resultados representam estimativas da composição corporal baseadas em equações de predição validadas cientificamente. Para orientação profissional individualizada, consulte um nutricionista ou médico especializado.',
+      generateLink: '🔗 Gerar Link Compartilhável',
+      newEvaluation: '🔄 Nova Avaliação',
+      savePdf: '💾 Salvar como PDF',
+      shareTitle: '🔗 Link Compartilhável',
+      shareDescription: 'Copie o link abaixo e compartilhe com quem quiser. Qualquer pessoa poderá visualizar os resultados desta avaliação.',
+      copyLink: '📋 Copiar Link',
+      close: 'Fechar',
+      linkCopied: '✅ Link copiado! Agora você pode colar e compartilhar em qualquer aplicativo.',
+      linkCopyError: '❌ Não foi possível copiar automaticamente. Por favor, selecione e copie o link manualmente.',
+      // Alertas
+      enterName: 'Digite o nome completo',
+      selectSex: 'Selecione o sexo',
+      invalidAge: 'Idade inválida (5-120 anos)',
+      invalidHeight: 'Altura inválida (50-250 cm)',
+      invalidWeight: 'Peso inválido (10-300 kg)',
+      enterAllMeasures: 'Digite todas as medidas (1-100 mm)',
+      // Dobras
+      triceps: 'Tríceps (Tricipital)',
+      biceps: 'Bíceps (Bicipital)',
+      subscapular: 'Subescapular',
+      suprailiac: 'Suprailíaca',
+      chest: 'Peitoral',
+      abdominal: 'Abdominal',
+      thigh: 'Coxa'
+    },
+    en: {
+      appTitle: 'BodyCheck',
+      appSubtitle: 'Body Composition Assessment',
+      aboutText1: '<strong>BodyCheck</strong> is an application developed for body composition assessment of children, adolescents, adults and elderly, of both sexes.',
+      aboutText2: 'The app uses skinfold measurements to estimate body composition, based on formulas from validated scientific studies.',
+      aboutText3: 'The platform automatically applies the equations and generates reports with results, facilitating interpretation and standardization of assessments.',
+      language: 'Language / Idioma',
+      startBtn: '▶️ Start Assessment',
+      personalInfo: 'Personal Information',
+      fullName: 'Full Name',
+      fullNamePlaceholder: 'Enter full name',
+      sex: 'Sex',
+      male: 'Male',
+      female: 'Female',
+      age: 'Age (years)',
+      agePlaceholder: 'Enter age',
+      height: 'Height (cm)',
+      heightPlaceholder: 'Enter height',
+      weight: 'Body Weight (kg)',
+      weightPlaceholder: 'Enter weight',
+      continueBtn: 'Continue',
+      backBtn: 'Back',
+      skinfoldMeasures: 'Skinfold Measurements',
+      enterMeasures: 'Enter measurements in millimeters (mm)',
+      measurePlaceholder: 'Enter measurement',
+      calculateBtn: 'Calculate',
+      results: 'Assessment Results',
+      patientInfo: 'Patient Information',
+      name: 'Name',
+      skinfoldsMeasured: 'Skinfolds Measured',
+      equationUsed: 'Equation used',
+      bmi: 'Body Mass Index (BMI)',
+      classification: 'Classification',
+      bodyComposition: 'Body Composition',
+      bodyFatPercentage: 'Body Fat Percentage',
+      fatMass: 'Fat Mass',
+      fatFreeMass: 'Fat Free Mass',
+      interpretation: 'Interpretation',
+      compositionChart: '📊 Body Composition Chart',
+      references: '📚 Scientific References',
+      disclaimer: '⚠️ Legal Notice: This assessment does not replace medical or nutritional diagnosis. Results represent body composition estimates based on scientifically validated prediction equations. For individualized professional guidance, consult a nutritionist or specialized physician.',
+      generateLink: '🔗 Generate Shareable Link',
+      newEvaluation: '🔄 New Assessment',
+      savePdf: '💾 Save as PDF',
+      shareTitle: '🔗 Shareable Link',
+      shareDescription: 'Copy the link below and share with anyone. Anyone will be able to view the results of this assessment.',
+      copyLink: '📋 Copy Link',
+      close: 'Close',
+      linkCopied: '✅ Link copied! You can now paste and share in any application.',
+      linkCopyError: '❌ Could not copy automatically. Please select and copy the link manually.',
+      // Alerts
+      enterName: 'Enter full name',
+      selectSex: 'Select sex',
+      invalidAge: 'Invalid age (5-120 years)',
+      invalidHeight: 'Invalid height (50-250 cm)',
+      invalidWeight: 'Invalid weight (10-300 kg)',
+      enterAllMeasures: 'Enter all measurements (1-100 mm)',
+      // Skinfolds
+      triceps: 'Triceps',
+      biceps: 'Biceps',
+      subscapular: 'Subscapular',
+      suprailiac: 'Suprailiac',
+      chest: 'Chest',
+      abdominal: 'Abdominal',
+      thigh: 'Thigh'
+    }
+  };
+  
+  // Função para obter texto traduzido
+  function t(key) {
+    return translations[currentLang][key] || key;
+  }
+  
+  // Função para atualizar textos da interface
+  function updateLanguage() {
+    // Home
+    document.querySelector('.header h1').textContent = t('appTitle');
+    document.querySelector('.header p').textContent = t('appSubtitle');
+    
+    const aboutPs = document.querySelectorAll('.about p');
+    if (aboutPs.length >= 3) {
+      aboutPs[0].innerHTML = t('aboutText1');
+      aboutPs[1].innerHTML = t('aboutText2');
+      aboutPs[2].innerHTML = t('aboutText3');
+    }
+    
+    document.querySelector('label[for="lang"]').innerHTML = '🌐 ' + t('language');
+    document.getElementById('btn-start').innerHTML = t('startBtn');
+    
+    // Info screen
+    const infoTitle = document.querySelector('#info .section-title');
+    if (infoTitle) infoTitle.textContent = t('personalInfo');
+    
+    const labels = document.querySelectorAll('#info .input-group label');
+    if (labels[0]) labels[0].textContent = t('fullName');
+    if (labels[1]) labels[1].textContent = t('sex');
+    if (labels[2]) labels[2].textContent = t('age');
+    if (labels[3]) labels[3].textContent = t('height');
+    if (labels[4]) labels[4].textContent = t('weight');
+    
+    document.getElementById('name').placeholder = t('fullNamePlaceholder');
+    document.getElementById('age').placeholder = t('agePlaceholder');
+    document.getElementById('height').placeholder = t('heightPlaceholder');
+    document.getElementById('weight').placeholder = t('weightPlaceholder');
+    
+    const sexOptions = document.querySelectorAll('.radio-option');
+    if (sexOptions[0]) sexOptions[0].querySelector('div:last-child').textContent = t('male');
+    if (sexOptions[1]) sexOptions[1].querySelector('div:last-child').textContent = t('female');
+    
+    document.getElementById('btn-continue').textContent = t('continueBtn');
+    document.getElementById('btn-back-info').textContent = t('backBtn');
+    
+    // Folds screen
+    const foldsTitle = document.querySelector('#folds .section-title');
+    if (foldsTitle) foldsTitle.textContent = t('skinfoldMeasures');
+    
+    const infoText = document.querySelector('#folds .info-text');
+    if (infoText) infoText.textContent = t('enterMeasures');
+    
+    document.getElementById('btn-calculate').textContent = t('calculateBtn');
+    document.getElementById('btn-back-folds').textContent = t('backBtn');
+    
+    // Results screen
+    const resultsTitle = document.querySelector('#results .section-title');
+    if (resultsTitle) resultsTitle.textContent = t('results');
+    
+    document.getElementById('btn-share-link').innerHTML = t('generateLink');
+    document.getElementById('btn-new').innerHTML = t('newEvaluation');
+  }
   
   // Função para codificar dados em Base64 para URL
   function encodeData(data) {
@@ -864,6 +1063,11 @@ body {
   
   // Exibir resultados compartilhados
   function displaySharedResults(data) {
+    // Definir idioma do link compartilhado
+    if (data.lang) {
+      currentLang = data.lang;
+    }
+    
     // Ocultar todas as telas e mostrar apenas results
     document.getElementById('home').style.display = 'none';
     document.getElementById('info').style.display = 'none';
@@ -872,23 +1076,27 @@ body {
     // Adicionar classe especial para visualização compartilhada
     document.querySelector('.app').classList.add('shared-view');
     
+    // Atualizar textos do cabeçalho com idioma correto
+    document.querySelector('.header h1').textContent = t('appTitle');
+    document.querySelector('.header p').textContent = t('appSubtitle');
+    
     // Preencher todos os dados
     document.getElementById('r-name').textContent = data.name;
-    document.getElementById('r-sex').textContent = data.sex === 'm' ? 'Masculino' : 'Feminino';
-    document.getElementById('r-age').textContent = data.age + ' anos';
+    document.getElementById('r-sex').textContent = data.sex === 'm' ? t('male') : t('female');
+    document.getElementById('r-age').textContent = data.age + ' ' + (currentLang === 'pt' ? 'anos' : 'years');
     document.getElementById('r-height').textContent = data.height + ' cm';
     document.getElementById('r-weight').textContent = data.weight + ' kg';
     document.getElementById('r-equation').textContent = data.equation;
     
     // Preencher dobras
     const foldNames = {
-      triceps: 'Tríceps',
-      biceps: 'Bíceps',
-      subscapular: 'Subescapular',
-      suprailiac: 'Suprailíaca',
-      chest: 'Peitoral',
-      abdominal: 'Abdominal',
-      thigh: 'Coxa'
+      triceps: t('triceps'),
+      biceps: t('biceps'),
+      subscapular: t('subscapular'),
+      suprailiac: t('suprailiac'),
+      chest: t('chest'),
+      abdominal: t('abdominal'),
+      thigh: t('thigh')
     };
     
     const foldsContainer = document.getElementById('r-folds-container');
@@ -915,8 +1123,11 @@ body {
     const bfPercent = parseFloat(data.bf);
     const ffmPercent = (100 - bfPercent).toFixed(1);
     
+    const fatMassLabel = currentLang === 'pt' ? 'Massa Gorda' : 'Fat Mass';
+    const ffmLabel = currentLang === 'pt' ? 'Massa Livre de Gordura' : 'Fat Free Mass';
+    
     const chartHTML = '<div class="composition-chart">' +
-      '<h3 style="color: #667eea; margin-bottom: 1rem; font-size: 1.15rem;">📊 Gráfico de Composição Corporal</h3>' +
+      '<h3 style="color: #667eea; margin-bottom: 1rem; font-size: 1.15rem;">' + t('compositionChart') + '</h3>' +
       '<div class="chart-single-bar">' +
       '<div class="chart-segment fat" style="width: ' + bfPercent + '%">' + data.bf + '%</div>' +
       '<div class="chart-segment ffm" style="width: ' + ffmPercent + '%">' + ffmPercent + '%</div>' +
@@ -924,11 +1135,11 @@ body {
       '<div class="chart-legend">' +
       '<div class="legend-item">' +
       '<div class="legend-color fat"></div>' +
-      '<span class="legend-text">Massa Gorda: ' + data.bf + '% (' + data.fm + ' kg)</span>' +
+      '<span class="legend-text">' + fatMassLabel + ': ' + data.bf + '% (' + data.fm + ' kg)</span>' +
       '</div>' +
       '<div class="legend-item">' +
       '<div class="legend-color ffm"></div>' +
-      '<span class="legend-text">Massa Livre de Gordura: ' + ffmPercent + '% (' + data.ffm + ' kg)</span>' +
+      '<span class="legend-text">' + ffmLabel + ': ' + ffmPercent + '% (' + data.ffm + ' kg)</span>' +
       '</div>' +
       '</div>' +
       '</div>';
@@ -938,25 +1149,33 @@ body {
     bodyCompositionCard.insertAdjacentHTML('afterend', chartHTML);
     
     // Adicionar interpretação
-    document.getElementById('r-interp').innerHTML = '<strong>Interpretação:</strong><br>' + data.interp;
+    const interpretationLabel = currentLang === 'pt' ? 'Interpretação' : 'Interpretation';
+    document.getElementById('r-interp').innerHTML = '<strong>' + interpretationLabel + ':</strong><br>' + data.interp;
     // Adicionar interpretação
     document.getElementById('r-interp').innerHTML = '<strong>Interpretação:</strong><br>' + data.interp;
     
     // Adicionar referências científicas após interpretação
     // Adicionar referências científicas após interpretação
+    const equationUsed = currentLang === 'pt' ? 'Equação utilizada' : 'Equation used';
+    const bmiClassAdults = currentLang === 'pt' ? 'Classificação do IMC (Adultos)' : 'BMI Classification (Adults)';
+    const bmiClassElderly = currentLang === 'pt' ? 'Classificação do IMC (Idosos)' : 'BMI Classification (Elderly)';
+    const bodyFatPerc = currentLang === 'pt' ? 'Percentual de Gordura Corporal' : 'Body Fat Percentage';
+    const bodyDensity = currentLang === 'pt' ? 'Densidade Corporal' : 'Body Density';
+    const generalGuidelines = currentLang === 'pt' ? 'Diretrizes Gerais' : 'General Guidelines';
+    
     const referencesHTML = '<div class="references-section">' +
-      '<h3>📚 Referências Científicas</h3>' +
-      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>Equação utilizada:</strong> ' + data.equation + '</p></div>' +
-      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>Classificação do IMC (Adultos):</strong> World Health Organization (WHO). Obesity: Preventing and Managing the Global Epidemic. WHO Technical Report Series 894, Geneva, 2000.</p></div>' +
-      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>Classificação do IMC (Idosos):</strong> Lipschitz, D.A. Screening for nutritional status in the elderly. Primary Care, 21(1):55-67, 1994.</p></div>' +
-      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>Percentual de Gordura Corporal:</strong> Gallagher, D. et al. Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index. American Journal of Clinical Nutrition, 72(3):694-701, 2000.</p></div>' +
-      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>Densidade Corporal:</strong> Siri, W.E. Body composition from fluid spaces and density: analysis of methods. Techniques for measuring body composition, 1956.</p></div>' +
-      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>Diretrizes Gerais:</strong> American College of Sports Medicine (ACSM). ACSM\'s Guidelines for Exercise Testing and Prescription, 11th Edition, 2021.</p></div>' +
+      '<h3>' + t('references') + '</h3>' +
+      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>' + equationUsed + ':</strong> ' + data.equation + '</p></div>' +
+      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>' + bmiClassAdults + ':</strong> World Health Organization (WHO). Obesity: Preventing and Managing the Global Epidemic. WHO Technical Report Series 894, Geneva, 2000.</p></div>' +
+      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>' + bmiClassElderly + ':</strong> Lipschitz, D.A. Screening for nutritional status in the elderly. Primary Care, 21(1):55-67, 1994.</p></div>' +
+      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>' + bodyFatPerc + ':</strong> Gallagher, D. et al. Healthy percentage body fat ranges: an approach for developing guidelines based on body mass index. American Journal of Clinical Nutrition, 72(3):694-701, 2000.</p></div>' +
+      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>' + bodyDensity + ':</strong> Siri, W.E. Body composition from fluid spaces and density: analysis of methods. Techniques for measuring body composition, 1956.</p></div>' +
+      '<div class="reference-item"><span class="reference-bullet">•</span><p><strong>' + generalGuidelines + ':</strong> American College of Sports Medicine (ACSM). ACSM\'s Guidelines for Exercise Testing and Prescription, 11th Edition, 2021.</p></div>' +
       '</div>';
     
     // Adicionar aviso legal
     const disclaimerHTML = '<div class="disclaimer-box">' +
-      '<p><strong>⚠️ Aviso Legal:</strong> Esta avaliação não substitui diagnóstico médico ou nutricional. Os resultados representam estimativas da composição corporal baseadas em equações de predição validadas cientificamente. Para orientação profissional individualizada, consulte um nutricionista ou médico especializado.</p>' +
+      '<p>' + t('disclaimer') + '</p>' +
       '</div>';
     
     // Inserir referências e aviso após interpretação
@@ -975,12 +1194,28 @@ body {
     const btnSavePdf = document.createElement('button');
     btnSavePdf.className = 'btn btn-save-pdf';
     btnSavePdf.id = 'btn-save-shared-pdf';
-    btnSavePdf.innerHTML = '💾 Salvar como PDF';
+    btnSavePdf.innerHTML = t('savePdf');
     resultsDiv.appendChild(btnSavePdf);
     
     // Event listener para salvar PDF
     btnSavePdf.addEventListener('click', function() {
       window.print();
+    });
+    
+    // Atualizar títulos dos cards
+    const resultCards = document.querySelectorAll('#results .result-card h3');
+    if (resultCards[0]) resultCards[0].textContent = t('patientInfo');
+    if (resultCards[1]) resultCards[1].textContent = t('skinfoldsMeasured');
+    if (resultCards[2]) resultCards[2].textContent = t('bmi');
+    if (resultCards[3]) resultCards[3].textContent = t('bodyComposition');
+    
+    // Atualizar labels dos resultados
+    const labels = document.querySelectorAll('#results .result-label');
+    const labelTexts = [t('name'), t('sex'), t('age'), t('height'), t('weight'), t('equationUsed'), t('bmi'), t('classification'), t('bodyFatPercentage'), t('classification'), t('fatMass'), t('fatFreeMass')];
+    labels.forEach(function(label, index) {
+      if (labelTexts[index]) {
+        label.textContent = labelTexts[index];
+      }
     });
     
     // Mostrar tela de resultados
@@ -1005,7 +1240,8 @@ body {
       bfC: results.bfC,
       bmiCol: getBmiColor(results.bmiC),
       bfCol: getBfColor(results.bfC),
-      interp: results.interp
+      interp: results.interp,
+      lang: currentLang // Adicionar idioma aos dados
     };
     
     const encoded = encodeData(shareData);
@@ -1014,6 +1250,13 @@ body {
     
     // Mostrar modal com o link
     document.getElementById('share-link-input').value = shareLink;
+    
+    // Traduzir modal
+    document.querySelector('#share-modal h3').innerHTML = t('shareTitle');
+    document.querySelector('#share-modal p').textContent = t('shareDescription');
+    document.getElementById('btn-copy-link').innerHTML = t('copyLink');
+    document.getElementById('btn-close-modal').textContent = t('close');
+    
     document.getElementById('share-modal').classList.add('show');
   }
   
@@ -1040,13 +1283,13 @@ body {
     
     try {
       document.execCommand('copy');
-      alert('✅ Link copiado! Agora você pode colar e compartilhar em qualquer aplicativo.');
+      alert(t('linkCopied'));
     } catch (err) {
       // Fallback para navegadores mais novos
       navigator.clipboard.writeText(input.value).then(function() {
-        alert('✅ Link copiado! Agora você pode colar e compartilhar em qualquer aplicativo.');
+        alert(t('linkCopied'));
       }).catch(function() {
-        alert('❌ Não foi possível copiar automaticamente. Por favor, selecione e copie o link manualmente.');
+        alert(t('linkCopyError'));
       });
     }
   }
@@ -1080,27 +1323,27 @@ body {
     const weight = parseFloat(document.getElementById('weight').value);
     
     if (!name) {
-      alert('Digite o nome completo');
+      alert(t('enterName'));
       return false;
     }
     
     if (!appData.sex) {
-      alert('Selecione o sexo');
+      alert(t('selectSex'));
       return false;
     }
     
     if (!age || age < 5 || age > 120) {
-      alert('Idade inválida (5-120 anos)');
+      alert(t('invalidAge'));
       return false;
     }
     
     if (!height || height < 50 || height > 250) {
-      alert('Altura inválida (50-250 cm)');
+      alert(t('invalidHeight'));
       return false;
     }
     
     if (!weight || weight < 10 || weight > 300) {
-      alert('Peso inválido (10-300 kg)');
+      alert(t('invalidWeight'));
       return false;
     }
     
@@ -1222,7 +1465,7 @@ body {
     }
     
     if (!allValid) {
-      alert('Digite todas as medidas (1-100 mm)');
+      alert(t('enterAllMeasures'));
       return;
     }
     
@@ -1282,8 +1525,14 @@ body {
       } else if (bmi < 30) {
         bmiC = 'Sobrepeso';
         bmiCol = 'attention';
+      } else if (bmi < 35) {
+        bmiC = 'Obesidade Grau I';
+        bmiCol = 'warning';
+      } else if (bmi < 40) {
+        bmiC = 'Obesidade Grau II';
+        bmiCol = 'warning';
       } else {
-        bmiC = 'Obesidade';
+        bmiC = 'Obesidade Grau III';
         bmiCol = 'warning';
       }
     } else {
@@ -1344,6 +1593,7 @@ body {
           bfCol = 'warning';
         }
       } else {
+        // 60 anos ou mais
         if (bfNum < 24) {
           bfC = 'Baixo';
           bfCol = 'attention';
@@ -1389,6 +1639,7 @@ body {
           bfCol = 'warning';
         }
       } else {
+        // 60 anos ou mais
         if (bfNum < 13) {
           bfC = 'Baixo';
           bfCol = 'attention';
@@ -1532,6 +1783,12 @@ body {
     if (checkSharedView()) {
       return; // Se for visualização compartilhada, não inicializar app normal
     }
+    
+    // Event listener para mudança de idioma
+    document.getElementById('lang').addEventListener('change', function() {
+      currentLang = this.value;
+      updateLanguage();
+    });
     
     document.getElementById('btn-start').addEventListener('click', function() {
       goToScreen('info');
