@@ -403,132 +403,73 @@ body {
   }
 }
 
-/* Estilos para Impressão */
-@media print {
-  body {
-    background: #fff;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .app {
-    background: #fff;
-  }
-  
-  .header {
-    background: #667eea !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-    page-break-after: avoid;
-  }
-  
-  .content {
-    padding: 20px;
-    max-width: 100%;
-  }
-  
-  .screen {
-    display: none !important;
-  }
-  
-  #results.active {
-    display: block !important;
-  }
-  
-  .btn {
-    display: none !important;
-  }
-  
-  .result-card {
-    page-break-inside: avoid;
-    border: 2px solid #667eea !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    margin-bottom: 20px;
-  }
-  
-  .result-card h3 {
-    color: #667eea !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  .classification {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color-adjust: exact;
-  }
-  
-  .classification.normal {
-    background: rgba(16, 185, 129, 0.2) !important;
-    color: #059669 !important;
-  }
-  
-  .classification.attention {
-    background: rgba(245, 158, 11, 0.2) !important;
-    color: #d97706 !important;
-  }
-  
-  .classification.warning {
-    background: rgba(239, 68, 68, 0.2) !important;
-    color: #dc2626 !important;
-  }
-  
-  .interpretation {
-    page-break-inside: avoid;
-    border-left: 5px solid #667eea !important;
-    background: #f0f9ff !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  .loading {
-    display: none !important;
-  }
-  
-  /* Informações do paciente para impressão */
-  #results::before {
-    content: "INFORMAÇÕES DO PACIENTE";
-    display: block;
-    font-size: 16px;
-    font-weight: bold;
-    color: #667eea;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
-  }
-  
-  #patient-info-print {
-    display: block !important;
-    background: #f0f4ff;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 2px solid #667eea;
-    page-break-inside: avoid;
-  }
-  
-  #patient-info-print p {
-    margin: 5px 0;
-    color: #1f2937;
-  }
-  
-  #patient-info-print strong {
-    color: #667eea;
-  }
-  
-  /* Rodapé */
-  #results::after {
-    content: "BodyCheck - Avaliação da Composição Corporal | Relatório gerado em " attr(data-date);
-    display: block;
-    margin-top: 30px;
-    padding-top: 15px;
-    border-top: 1px solid #e5e7eb;
-    font-size: 10px;
-    color: #6b7280;
-    text-align: center;
-  }
+/* Modal de compartilhamento */
+.share-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.share-modal.show {
+  display: flex;
+}
+
+.share-modal-content {
+  background: #fff;
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.link-box {
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+.link-box input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  color: #374151;
+  font-family: monospace;
+  padding: 0;
+}
+
+.link-box input:focus {
+  outline: none;
+}
+
+/* Tela de visualização via link */
+.shared-view {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0;
+}
+
+.shared-view .header {
+  margin-bottom: 0;
+}
+
+.shared-view .content {
+  background: #fff;
+  min-height: calc(100vh - 80px);
+  padding-bottom: 2rem;
 }
 </style>
 </head>
@@ -616,12 +557,39 @@ body {
     <div id="results" class="screen">
       <h2 class="section-title">Resultados da Avaliação</h2>
       
-      <!-- Informações do paciente (ocultas na tela, visíveis na impressão) -->
-      <div id="patient-info-print" style="display:none;">
-        <p><strong>Nome:</strong> <span id="print-name"></span></p>
-        <p><strong>Sexo:</strong> <span id="print-sex"></span> | <strong>Idade:</strong> <span id="print-age"></span> anos</p>
-        <p><strong>Altura:</strong> <span id="print-height"></span> cm | <strong>Peso:</strong> <span id="print-weight"></span> kg</p>
-        <p><strong>Equação utilizada:</strong> <span id="print-equation"></span></p>
+      <!-- Informações do Paciente -->
+      <div class="result-card">
+        <h3>Informações do Paciente</h3>
+        <div class="result-item">
+          <span class="result-label">Nome</span>
+          <span class="result-value" id="r-name">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Sexo</span>
+          <span class="result-value" id="r-sex">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Idade</span>
+          <span class="result-value" id="r-age">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Altura</span>
+          <span class="result-value" id="r-height">--</span>
+        </div>
+        <div class="result-item">
+          <span class="result-label">Peso</span>
+          <span class="result-value" id="r-weight">--</span>
+        </div>
+      </div>
+      
+      <!-- Dobras Cutâneas -->
+      <div class="result-card">
+        <h3>Dobras Cutâneas Medidas</h3>
+        <div id="r-folds-container"></div>
+        <div class="result-item" style="border-bottom: none; margin-top: 10px;">
+          <span class="result-label" style="font-style: italic; font-size: 0.85rem;">Equação utilizada</span>
+          <span class="result-value" style="font-size: 0.9rem; font-weight: 500;" id="r-equation">--</span>
+        </div>
       </div>
       
       <div class="result-card">
@@ -658,8 +626,23 @@ body {
       
       <div class="interpretation" id="r-interp"></div>
       
-      <button class="btn" id="btn-print">🖨️ Imprimir Relatório</button>
+      <button class="btn" id="btn-share-link">🔗 Gerar Link Compartilhável</button>
       <button class="btn btn-secondary" id="btn-new">🔄 Nova Avaliação</button>
+      
+      <!-- Modal para mostrar o link -->
+      <div id="share-modal" class="share-modal">
+        <div class="share-modal-content">
+          <h3 style="color: #667eea; margin-bottom: 1rem;">🔗 Link Compartilhável</h3>
+          <p style="color: #6b7280; margin-bottom: 1rem; font-size: 0.9rem;">
+            Copie o link abaixo e compartilhe com quem quiser. Qualquer pessoa poderá visualizar os resultados desta avaliação.
+          </p>
+          <div class="link-box">
+            <input type="text" id="share-link-input" readonly>
+          </div>
+          <button class="btn" id="btn-copy-link" style="margin-bottom: 0.5rem;">📋 Copiar Link</button>
+          <button class="btn back-btn" id="btn-close-modal">Fechar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -687,6 +670,159 @@ body {
   
   let results = {};
   let currentFolds = {};
+  
+  // Função para codificar dados em Base64 para URL
+  function encodeData(data) {
+    const jsonString = JSON.stringify(data);
+    return btoa(encodeURIComponent(jsonString));
+  }
+  
+  // Função para decodificar dados da URL
+  function decodeData(encoded) {
+    try {
+      const jsonString = decodeURIComponent(atob(encoded));
+      return JSON.parse(jsonString);
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  // Verificar se é uma visualização compartilhada
+  function checkSharedView() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedData = urlParams.get('data');
+    
+    if (sharedData) {
+      const data = decodeData(sharedData);
+      if (data) {
+        displaySharedResults(data);
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  // Exibir resultados compartilhados
+  function displaySharedResults(data) {
+    // Ocultar todas as telas e mostrar apenas results
+    document.getElementById('home').style.display = 'none';
+    document.getElementById('info').style.display = 'none';
+    document.getElementById('folds').style.display = 'none';
+    
+    // Adicionar classe especial para visualização compartilhada
+    document.querySelector('.app').classList.add('shared-view');
+    
+    // Preencher todos os dados
+    document.getElementById('r-name').textContent = data.name;
+    document.getElementById('r-sex').textContent = data.sex === 'm' ? 'Masculino' : 'Feminino';
+    document.getElementById('r-age').textContent = data.age + ' anos';
+    document.getElementById('r-height').textContent = data.height + ' cm';
+    document.getElementById('r-weight').textContent = data.weight + ' kg';
+    document.getElementById('r-equation').textContent = data.equation;
+    
+    // Preencher dobras
+    const foldNames = {
+      triceps: 'Tríceps',
+      biceps: 'Bíceps',
+      subscapular: 'Subescapular',
+      suprailiac: 'Suprailíaca',
+      chest: 'Peitoral',
+      abdominal: 'Abdominal',
+      thigh: 'Coxa'
+    };
+    
+    const foldsContainer = document.getElementById('r-folds-container');
+    foldsContainer.innerHTML = '';
+    
+    for (let key in data.folds) {
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.innerHTML = '<span class="result-label">' + foldNames[key] + '</span>' +
+                     '<span class="result-value">' + data.folds[key] + ' mm</span>';
+      foldsContainer.appendChild(div);
+    }
+    
+    // Preencher resultados
+    document.getElementById('r-bmi').textContent = data.bmi;
+    document.getElementById('r-bf').textContent = data.bf + '%';
+    document.getElementById('r-fm').textContent = data.fm + ' kg';
+    document.getElementById('r-ffm').textContent = data.ffm + ' kg';
+    
+    document.getElementById('r-bmi-class').innerHTML = '<span class="classification ' + data.bmiCol + '">' + data.bmiC + '</span>';
+    document.getElementById('r-bf-class').innerHTML = '<span class="classification ' + data.bfCol + '">' + data.bfC + '</span>';
+    
+    document.getElementById('r-interp').innerHTML = '<strong>Interpretação:</strong><br>' + data.interp;
+    
+    // Ocultar botão de compartilhar e mostrar apenas "Nova Avaliação"
+    document.getElementById('btn-share-link').style.display = 'none';
+    document.getElementById('btn-new').textContent = '🏠 Fazer Minha Avaliação';
+    
+    // Mostrar tela de resultados
+    document.getElementById('results').classList.add('active');
+  }
+  
+  // Gerar link compartilhável
+  function generateShareLink() {
+    const shareData = {
+      name: appData.name,
+      sex: appData.sex,
+      age: appData.age,
+      height: appData.height,
+      weight: appData.weight,
+      equation: appData.eq,
+      folds: results.folds,
+      bmi: results.bmi,
+      bf: results.bf,
+      fm: results.fm,
+      ffm: results.ffm,
+      bmiC: results.bmiC,
+      bfC: results.bfC,
+      bmiCol: getBmiColor(results.bmiC),
+      bfCol: getBfColor(results.bfC),
+      interp: results.interp
+    };
+    
+    const encoded = encodeData(shareData);
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareLink = baseUrl + '?data=' + encoded;
+    
+    // Mostrar modal com o link
+    document.getElementById('share-link-input').value = shareLink;
+    document.getElementById('share-modal').classList.add('show');
+  }
+  
+  // Obter classe de cor do IMC
+  function getBmiColor(classification) {
+    if (classification === 'Peso normal') return 'normal';
+    if (classification === 'Obesidade') return 'warning';
+    return 'attention';
+  }
+  
+  // Obter classe de cor do BF
+  function getBfColor(classification) {
+    if (classification === 'Adequado') return 'normal';
+    if (classification === 'Alto') return 'warning';
+    return 'attention';
+  }
+  
+  // Copiar link para área de transferência
+  function copyShareLink() {
+    const input = document.getElementById('share-link-input');
+    input.select();
+    input.setSelectionRange(0, 99999); // Para mobile
+    
+    try {
+      document.execCommand('copy');
+      alert('✅ Link copiado! Agora você pode colar e compartilhar em qualquer aplicativo.');
+    } catch (err) {
+      // Fallback para navegadores mais novos
+      navigator.clipboard.writeText(input.value).then(function() {
+        alert('✅ Link copiado! Agora você pode colar e compartilhar em qualquer aplicativo.');
+      }).catch(function() {
+        alert('❌ Não foi possível copiar automaticamente. Por favor, selecione e copie o link manualmente.');
+      });
+    }
+  }
   
   function goToScreen(screenId) {
     const screens = document.querySelectorAll('.screen');
@@ -995,17 +1131,35 @@ body {
     
     document.getElementById('r-interp').innerHTML = '<strong>Interpretação:</strong><br>' + results.interp;
     
-    // Preencher informações para impressão
-    document.getElementById('print-name').textContent = appData.name;
-    document.getElementById('print-sex').textContent = appData.sex === 'm' ? 'Masculino' : 'Feminino';
-    document.getElementById('print-age').textContent = appData.age;
-    document.getElementById('print-height').textContent = appData.height;
-    document.getElementById('print-weight').textContent = appData.weight;
-    document.getElementById('print-equation').textContent = appData.eq;
+    // Preencher informações do paciente na tela de resultados
+    document.getElementById('r-name').textContent = appData.name;
+    document.getElementById('r-sex').textContent = appData.sex === 'm' ? 'Masculino' : 'Feminino';
+    document.getElementById('r-age').textContent = appData.age + ' anos';
+    document.getElementById('r-height').textContent = appData.height + ' cm';
+    document.getElementById('r-weight').textContent = appData.weight + ' kg';
+    document.getElementById('r-equation').textContent = appData.eq;
     
-    // Adicionar data ao elemento results para impressão
-    const resultsEl = document.getElementById('results');
-    resultsEl.setAttribute('data-date', new Date().toLocaleDateString('pt-BR'));
+    // Preencher dobras cutâneas medidas
+    const foldNames = {
+      triceps: 'Tríceps',
+      biceps: 'Bíceps',
+      subscapular: 'Subescapular',
+      suprailiac: 'Suprailíaca',
+      chest: 'Peitoral',
+      abdominal: 'Abdominal',
+      thigh: 'Coxa'
+    };
+    
+    const foldsContainer = document.getElementById('r-folds-container');
+    foldsContainer.innerHTML = '';
+    
+    for (let key in results.folds) {
+      const div = document.createElement('div');
+      div.className = 'result-item';
+      div.innerHTML = '<span class="result-label">' + foldNames[key] + '</span>' +
+                     '<span class="result-value">' + results.folds[key] + ' mm</span>';
+      foldsContainer.appendChild(div);
+    }
     
     goToScreen('results');
   }
@@ -1059,6 +1213,11 @@ body {
   }
   
   document.addEventListener('DOMContentLoaded', function() {
+    // Verificar se é visualização compartilhada
+    if (checkSharedView()) {
+      return; // Se for visualização compartilhada, não inicializar app normal
+    }
+    
     document.getElementById('btn-start').addEventListener('click', function() {
       goToScreen('info');
     });
@@ -1090,11 +1249,25 @@ body {
       goToScreen('info');
     });
     
-    document.getElementById('btn-print').addEventListener('click', function() {
-      printReport();
+    document.getElementById('btn-share-link').addEventListener('click', function() {
+      generateShareLink();
+    });
+    
+    document.getElementById('btn-copy-link').addEventListener('click', function() {
+      copyShareLink();
+    });
+    
+    document.getElementById('btn-close-modal').addEventListener('click', function() {
+      document.getElementById('share-modal').classList.remove('show');
     });
     
     document.getElementById('btn-new').addEventListener('click', function() {
+      // Se for visualização compartilhada, recarregar página
+      if (document.querySelector('.app').classList.contains('shared-view')) {
+        window.location.href = window.location.origin + window.location.pathname;
+        return;
+      }
+      
       appData = {
         name: '',
         sex: '',
